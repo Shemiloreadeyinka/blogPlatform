@@ -6,8 +6,8 @@ const route=express.Router()
 
 route.post('/register',register);
 route.post('/login',login);
-route.get('/getuser/:id',authentication, getoneUser)
+route.get('/getuser/:userId',authentication, getoneUser)
 route.get('/getusers',authentication,authorization, getallUsers)
-route.delete('/delete/:id',authentication,deleteUser)
+route.delete('/delete/:userId',authentication,deleteUser)
 
 module.exports=route

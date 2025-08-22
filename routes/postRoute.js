@@ -5,7 +5,7 @@ deletePost,
 editPost}= require("../controllers/postController")
 const express= require('express');
 const authentication= require("../middlewares/authMiddleware")
-const route=express.router()
+const route=express.Router()
 
 route.post('/create',authentication, createPost);
 route.get('/:id',authentication, getPost);  

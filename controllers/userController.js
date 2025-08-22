@@ -41,9 +41,9 @@ exports.login = async (req, res) => {
 }
 
 exports.getoneUser = async (req, res) => {
-    const {id } = req.params
+    const { userId } = req.params
     try {
-        const user = User.findById(id).populate('posts')
+        const user = User.findById(userId).populate('posts')
         if (!user) return res.status(400).json({ message: "User doesn't exist" })
         return res.status(200).json({ message: "user retrieved successfully", user })
     } catch (error) {
@@ -63,10 +63,10 @@ exports.getallUsers = async (req, res) => {
 
 
 exports.deleteUser = async (req, res) => {
-    const { id } = req.params;
+    const { userId } = req.params;
 
     try {
-        const deletedUser = await User.findByIdAndDelete(id);
+        const deletedUser = await User.findByIdAndDelete(userId);
         if (!deletedUser) {
             return res.status(404).json({ message: "User not found" });
         }

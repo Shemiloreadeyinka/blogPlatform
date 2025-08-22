@@ -13,7 +13,7 @@ exports.addCategory = async (req, res) => {
         return res.status(201).json({ message: "category created successfully" })
 
     } catch (error) {
-        return res.status(500).json({ error: error.message })
+        return res.status(error.status||500).json({ error: error.message })
     }
 
 
@@ -26,7 +26,7 @@ exports.getCategory = async (req, res) => {
         if (!category) return res.status(404).json({ message: "category doesn't exist" })
         return res.status(200).json({ message: "category retrieved", category })
     } catch (error) {
-        return res.status(500).json({ error: error.message })
+        return res.status(error.status||500).json({ error: error.message })
     }
 
 }
@@ -37,7 +37,7 @@ exports.getAllCategories = async (req, res) => {
         return res.status(200).json({ message: "categories retrieved", categories })
 
     } catch (error) {
-        return res.status(500).json({ error: error.message })
+        return res.status(error.status||500).json({ error: error.message })
 
     }
 
@@ -46,11 +46,11 @@ exports.deleteCategory= async (req,res) => {
     let {id} = req.params
 
     try {
-        const deletedCategory= await Category.findById(id)
+        const deletedCategory= await Category.findByIdAndDelete(id)
         if (!deletedCategory) return res.status(404).json({message: "category doesn't exist"})
         return res.status(200).json({message: "category successfully deleted", deletedCategory})
     } catch (error) {
-                return res.status(500).json({ error: error.message })
+        return res.status(error.status||500).json({ error: error.message })
 
     }
     
@@ -83,6 +83,6 @@ exports.updateCategory = async (req, res) => {
         return res.status(200).json({ message: "Category updated successfully", category })
 
     } catch (error) {
-        return res.status(500).json({ error: error.message })
+        return res.status(error.status||500).json({ error: error.message })
     }
 }
