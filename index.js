@@ -1,6 +1,6 @@
 const express=require('express')
 const   dotenv=require('dotenv')
-const connectDB = require('./config')
+const connectDB = require('./config/dbConfig')
 const cookieParser = require('cookie-parser');
 
 

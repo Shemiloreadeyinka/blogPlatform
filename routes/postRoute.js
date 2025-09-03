@@ -2,15 +2,20 @@ const {createPost,
 getPost,
 getPosts,
 deletePost,
-editPost}= require("../controllers/postController")
+editPost,
+getAllUserPost}= require("../controllers/postController")
 const express= require('express');
 const authentication= require("../middlewares/authMiddleware")
 const route=express.Router()
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 
-route.post('/create',authentication, createPost);
-route.get('/:id',authentication, getPost);  
+route.get('/user/:userId',authentication, getAllUserPost);  
+route.post('/',authentication, upload.array('postPic', 3), createPost);
 route.get('/',authentication,getPosts);
+route.get('/:id',authentication, getPost);  
 route.delete('/:id',authentication,deletePost);
-route.patch('/:id',authentication,editPost)
+route.patch('/:id',authentication, upload.array('postPic', 3),editPost)
+
 
 module.exports=route

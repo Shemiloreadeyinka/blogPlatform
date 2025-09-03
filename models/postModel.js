@@ -2,6 +2,7 @@
 
 const postSchema  = new mongoose.Schema({
     author:{type: mongoose.Schema.Types.ObjectId, ref:'User'},
+    postPic: [{ type: String },{ public_id: { type: String, required: true } }],
     category:{type: mongoose.Schema.Types.ObjectId, ref:'Category'},
     title:{type: String, required:true ,trim:true},
     content:{type: String, required:true},

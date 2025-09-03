@@ -20,9 +20,9 @@ exports.addCategory = async (req, res) => {
 }
 
 exports.getCategory = async (req, res) => {
-    let { id } = req.params
+    let { categoryId } = req.params
     try {
-        let category = await Category.findById(id)
+        let category = await Category.findById(categoryId)
         if (!category) return res.status(404).json({ message: "category doesn't exist" })
         return res.status(200).json({ message: "category retrieved", category })
     } catch (error) {
@@ -43,10 +43,10 @@ exports.getAllCategories = async (req, res) => {
 
 }
 exports.deleteCategory= async (req,res) => {
-    let {id} = req.params
+    let {categoryId} = req.params
 
     try {
-        const deletedCategory= await Category.findByIdAndDelete(id)
+        const deletedCategory= await Category.findByIdAndDelete(categoryId)
         if (!deletedCategory) return res.status(404).json({message: "category doesn't exist"})
         return res.status(200).json({message: "category successfully deleted", deletedCategory})
     } catch (error) {
@@ -57,24 +57,23 @@ exports.deleteCategory= async (req,res) => {
 }
 
 exports.updateCategory = async (req, res) => {
-    let { name } = req.params
-    name = name?.trim().toLowerCase()
+    let { categoryId } = req.params
 
-    let { newName, description, image } = req.body
-    newName = newName?.trim().toLowerCase()
+    let { name, description, image } = req.body
+        name = name?.trim().toLowerCase()
+
 
     try {
-        if (!name) return res.status(400).json({ message: "Category name required" })
-
-        const category = await Category.findOne({ name })
+        const category = await Category.findById(categoryId)
+        console.log(category)
         if (!category) return res.status(404).json({ message: "Category doesn't exist" })
 
-        if (newName) {
-            const nameExists = await Category.findOne({ name: newName })
-            if (nameExists && nameExists._id.toString() !== category._id.toString()) {
+        if (name) {
+            const categoryName = await Category.findOne({ name })
+            if (categoryName && categoryName._id.toString() !== category._id.toString()) {
                 return res.status(400).json({ message: "Category with this new name already exists" })
             }
-            category.name = newName
+            category.name = name
         }
 
         if (description !== undefined) category.description = description

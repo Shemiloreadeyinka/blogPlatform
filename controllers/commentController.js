@@ -70,7 +70,7 @@ exports.editComment = async (req, res) => {
 exports.getAllCommentsByUser = async (req, res) => {
     const { userId } = req.params
     try {
-        const comments = await Comment.find({ author: userId }).populate('post', 'title').populate("author", "name,email")
+        const comments = await Comment.find({ author: userId }).populate('post', 'title').populate("author", "name ")
         if (!comments || comments.length === 0) return res.status(404).json({ message: "no comments for this user" })
         return res.status(200).json({ message: "comments retrieved successfully", comments })
     } catch (error) {
@@ -82,6 +82,7 @@ exports.getCommentUnderPost = async (req, res) => {
     const { postId } = req.params
     try {
         const comments = await Comment.find({ post: postId }).populate('author', 'name email')
+        if (!comments || comments.length<1) return res.status(404).json({message : "no comment on this post"})
         return res.status(200).json({ message: "comments Successfully retrieved", comments })
     } catch (error) {
         return res.status(error.status || 500).json({ error: error.message })
