@@ -1,4 +1,13 @@
 const Post = require("../models/postModel")
+const cloudinary = require('cloudinary').v2;
+const fs = require("fs/promises")
+
+cloudinary.config({
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.CLOUD_API_KEY,
+    api_secret: process.env.CLOUD_API_SECRET,
+});
+
 
 exports.createPost = async (req, res) => {
     const { id } = req.user
@@ -57,7 +66,9 @@ exports.deletePost = async (req, res) => {
     try {
         const post = await Post.findByIdAndDelete(id)
         if (!post) return res.status(404).json({ message: 'post not found' })
-
+        if (post.postPic && post.postPic.length > 0) {
+            await Promise.all(post.postPic.map(img => cloudinary.uploader.destroy(img.public_id)));
+        }
         if (req.user.id !== post.author.toString()) { return res.status(400).json({ message: "no permission to delete this post" }) }
         return res.status(200).json({ message: "post deleted successfully", post })
     } catch (error) {

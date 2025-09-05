@@ -12,7 +12,7 @@ cloudinary.config({
 
 
 exports.register = async (req, res) => {
-    const { name, email,password, phoneNo,role, profilePic } = req.body
+    const { name, email,password, phoneNo,role } = req.body
     try {
         if (!name || !email || !password || !phoneNo) return res.status(400).json({ message: 'please fill in credentials' })
         let user = await User.findOne({ email })
@@ -36,6 +36,8 @@ exports.register = async (req, res) => {
         return res.status(200).json({ message: 'user registered successfully',  user :registeredUser })
 
     } catch (error) {
+          console.error("Register Error:", error);
+
         return res.status(500).json({ message: `Error saving user: ${error.message}` });
 
     }
@@ -89,19 +91,20 @@ exports.deleteUser = async (req, res) => {
     const { userId } = req.params;
 
     try {
-        const deletedUser = await User.findByIdAndDelete(userId);
         if (req.user.id !== userId && req.user.role !== 'admin') {
             return res.status(403).json({ message: "You're not authorized to delete this user" });
         }
-        
-        if (!deletedUser) {
+        const user = await User.findById(userId);
+
+        if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-        if (deletedUser.profilePic && deletedUser.profilePic.public_id && deletedUser.profilePic.public_id !== "placeholder") {
-            await cloudinary.uploader.destroy(deletedUser.profilePic.public_id);
+        if (user.profilePic && user.profilePic.public_id && user.profilePic.public_id !== "placeholder") {
+            console.log("Deleting profile picture from Cloudinary:", user.profilePic.public_id);
+            await cloudinary.uploader.destroy(user.profilePic.public_id);
         }
-
-        const { password, ...rest } = deletedUser.toObject();
+       await user.deleteOne();
+        const { password, ...rest } = user.toObject();
         return res.status(200).json({ message: "User deleted successfully", user: rest });
     } catch (error) {
         return res.status(500).json({ error: error.message });
