@@ -18,7 +18,7 @@ exports.createPost = async (req, res) => {
         } else {
             postPicUrl = [{ url: "", public_id: "" }];
         }
-        const post = new Post({ title, content, author: id, category, postPic: postPicUrl ? [postPicUrl] : [] })
+        const post = new Post({ title, content, author: id, category, postPic: postPicUrl })
         await post.save()
         return res.status(201).json({ message: "post uploaded successfully", post })
     } catch (error) {
@@ -87,7 +87,7 @@ exports.editPost = async (req, res) => {
 
       await Promise.all(req.files.map(file => fs.unlink(file.path)));
 
-      updates.image = results.map(result => ({
+      post.postPic = results.map(result => ({
         url: result.secure_url,
         public_id: result.public_id
       }));

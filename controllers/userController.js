@@ -18,16 +18,18 @@ exports.register = async (req, res) => {
         let user = await User.findOne({ email })
         if (user) return res.status(400).json({ message: 'user already exists' })
         const hashedpassword = await bcrypt.hash(password, 10)
-
+        let profilePicUrl = "https://res.cloudinary.com/dwnqinmja/image/upload/v1756825319/profilepic_s4skl9.jpg";
+        let profilePicId = "placeholder";
         if (req.file) {
             const result = await cloudinary.uploader.upload(req.file.path, {
                 folder: 'Profile Pictures',
             });
             profilePicUrl = result.secure_url;
+            profilePicId = result.public_id;
             await fs.unlink(req.file.path);
         }
         user = new User({
-            name, email, phoneNo, password: hashedpassword, role, profilePic: profilePicUrl
+            name, email, phoneNo, password: hashedpassword, role,  profilePic: {url: profilePicUrl,public_id: profilePicId}
         })
         await user.save()
         const {password:_, ...registeredUser}=user.toObject()
@@ -91,12 +93,69 @@ exports.deleteUser = async (req, res) => {
         if (req.user.id !== userId && req.user.role !== 'admin') {
             return res.status(403).json({ message: "You're not authorized to delete this user" });
         }
+        
         if (!deletedUser) {
             return res.status(404).json({ message: "User not found" });
         }
+        if (deletedUser.profilePic && deletedUser.profilePic.public_id && deletedUser.profilePic.public_id !== "placeholder") {
+            await cloudinary.uploader.destroy(deletedUser.profilePic.public_id);
+        }
+
         const { password, ...rest } = deletedUser.toObject();
         return res.status(200).json({ message: "User deleted successfully", user: rest });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
+};
+
+exports.updateUser = async (req, res) => {
+  const { id } = req.user;
+
+  try {
+    let user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (req.file) {
+      if (
+        user.profilePic &&
+        user.profilePic.public_id &&
+        user.profilePic.public_id !== "placeholder"
+      ) {
+        await cloudinary.uploader.destroy(user.profilePic.public_id);
+      }
+
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "uploads",
+      });
+      await fs.unlink(req.file.path);
+
+      user.profilePic = {
+        url: result.secure_url,
+        public_id: result.public_id,
+      };
+    }
+
+    const { name, email, role, phoneNo, address } = req.body;
+
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (role) user.role = role;
+    if (phoneNo) user.phoneNo = phoneNo;
+    if (address) user.address = address;
+
+    await user.save();
+
+    const { password, ...updatedUser } = user.toObject();
+
+    return res.status(200).json({
+      message: "User updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error updating user", error: error.message });
+  }
 };
